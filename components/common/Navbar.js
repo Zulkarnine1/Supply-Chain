@@ -23,11 +23,11 @@ export default function Navbar({ portalName }) {
               </Link>
             </div>
             <div className="-mr-2 -my-2 md:hidden">
-              <p className="text-white text-lg">{portalName} Portal</p>
+              {portalName ? <p className="text-white text-lg">{portalName} PORTAL</p> : null}
             </div>
 
             <div className="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
-              <p className="text-white text-lg">{portalName} Portal</p>
+              {portalName ? <p className="text-white text-lg">{portalName} PORTAL</p> : null}
             </div>
           </div>
         </div>

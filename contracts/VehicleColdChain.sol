@@ -78,6 +78,7 @@ address public owner;
 
     uint[] public certificateIds;
     string[] public vehicleIds;
+    address[] public entityIds;
 
     mapping(string => Vehicle) public vehicles;
     mapping(uint => Certificate) public certificates;
@@ -87,20 +88,32 @@ address public owner;
     event AddVehicle(string vehicleId, address indexed manufacturer);
     event IssueCertificate(address indexed issuer, address indexed prover, uint certificateId, string message);    
 
+       function getEntitiesCount() public view returns(uint){
+        return entityIds.length;
+    }
+    
+    function getEntityByIndex(uint index) public view returns(Entity memory entity){
+
+    return entities[entityIds[index]];
+    }
+
+
     function addEntity(address _id, string memory _mode, string memory _name) public {
         Mode mode = unmarshalMode(_mode);
         uint[] memory _certificateIds = new uint[](MAX_CERTIFICATIONS);
 
-    if(Mode.INSPECTOR == Mode.INSPECTOR){
+    if(mode == Mode.INSPECTOR){
         require(msg.sender == owner, "Action only allowed by Owner");
         Entity memory entity = Entity(_id,_name, mode, _certificateIds);
         entities[_id] = entity;
+        entityIds.push(_id);
         emit AddEntity(entity.id, _mode, entity.name);
 
     }else{
         Entity memory entity = Entity(_id,_name, mode, _certificateIds);
         entities[_id] = entity;
-        emit AddEntity(entity.id, _mode, entity.name);
+        entityIds.push(_id);
+        emit AddEntity(_id, _mode, entity.name);
 
     }
 

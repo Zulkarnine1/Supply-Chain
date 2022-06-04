@@ -10,7 +10,7 @@ export default function Navbar({ portalName }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex justify-between items-center py-6 md:justify-start md:space-x-10">
             <div className="flex justify-start lg:w-0 lg:flex-1 ">
-              <Link href="/">
+              <a href="/">
                 <>
                   <span className="sr-only cursor-pointer">Velockchain</span>
                   {/* <img
@@ -20,7 +20,7 @@ export default function Navbar({ portalName }) {
                 /> */}
                   <p className="text-white text-2xl font-extrabold cursor-pointer">VelockChain</p>
                 </>
-              </Link>
+              </a>
             </div>
             <div className="-mr-2 -my-2 md:hidden">
               {portalName ? <p className="text-white text-lg">{portalName} PORTAL</p> : null}

@@ -88,14 +88,23 @@ address public owner;
     event AddVehicle(string vehicleId, address indexed manufacturer);
     event IssueCertificate(address indexed issuer, address indexed prover, uint certificateId, string message);    
 
-       function getEntitiesCount() public view returns(uint){
+    function getEntitiesCount() public view returns(uint){
         return entityIds.length;
+    }
+    function getVehiclesCount() public view returns(uint){
+        return vehicleIds.length;
     }
     
     function getEntityByIndex(uint index) public view returns(Entity memory entity){
-
     return entities[entityIds[index]];
     }
+    function getVehicleByIndex(uint index) public view returns(Vehicle memory vehicle){
+    Vehicle memory autoVehicle = vehicles[vehicleIds[index]];
+    return  autoVehicle;
+    }
+
+   
+    
 
 
     function addEntity(address _id, string memory _mode, string memory _name) public {
@@ -148,21 +157,25 @@ address public owner;
     function addVehicle(string memory brand, address manufacturer, string memory _model, uint pricePreDecimal,uint  pricePostDecimal, string memory vin, string memory color, uint manufactured_year , string memory manufactured_city, string memory manufactured_country, string memory additional_comment ) public returns(string memory vehicleId) {
 
         uint[] memory _certificateIds = new uint[](MAX_CERTIFICATIONS);
-        Vehicle memory autoVehicle = Vehicle(vin, brand, manufacturer,manufacturer,_model,pricePreDecimal,pricePostDecimal,color,manufactured_year, manufactured_city,manufactured_country, additional_comment,_certificateIds);
+        Vehicle memory autoVehicle = Vehicle(vin, brand, manufacturer, manufacturer, _model, pricePreDecimal, pricePostDecimal, color, manufactured_year, manufactured_city,manufactured_country, additional_comment,_certificateIds);
+        vehicles[vin] = autoVehicle;
         vehicleIds.push(vin);
-        emit AddVehicle(autoVehicle.id, autoVehicle.manufacturer);
+        emit AddVehicle(vin, autoVehicle.manufacturer);
         return vin;
 
     } 
+
+    
+
 
     function Time_call() public returns (uint256){
             return block.timestamp;
         }
 
-    function purhcaseVehicle(string memory vin, bytes memory sign, string memory message) public {
+    function purhcaseVehicle(string memory id,string memory vin, bytes memory sign, string memory message) public {
 
         // Check if vehicle exists
-        Vehicle memory autoVehicle = vehicles[vin];
+        Vehicle memory autoVehicle = vehicles[id];
         bool vehicleExists = compareStrings(autoVehicle.id,vin);
         require(vehicleExists == true, "Vehicle does not exist.");
         // transfer funds to currentOwner of the vehicle
@@ -171,7 +184,7 @@ address public owner;
         old_owner.transfer(amount);
         // Set new owner
         autoVehicle.current_owner = msg.sender;
-        vehicles[vin] = autoVehicle;
+        vehicles[id] = autoVehicle;
     
         // new owner certificate
          issueCertificate(old_owner, autoVehicle.current_owner, "DELIVERING_TO_SUPPLIER" , autoVehicle.id, sign, message, Time_call());

@@ -37,23 +37,12 @@ async function findVehiclesAwaitingInspection(web3, chainInstance, manufacturer)
       const certificate = await chainInstance.methods.certificates(certificateIds[j]).call();
       certs.push(certificate);
     }
-
-    let stat;
+    console.log(certs);
     if (certs.length > 0) {
-      stat = await statusMapper(certs[certs.length - 1].status);
-    } else {
-      stat = "MANUFACTURED";
-    }
-
-    if (
-      web3?.utils?.toChecksumAddress(vehicle.manufacturer) === manufacturer &&
-      certs.length > 0 &&
-      stat === "INSPECTED"
-    ) {
       fetchedCars.push({
         ...vehicle,
         certificates: certs,
-        status: certs.length <= 0 ? "MANUFACTURED" : stat,
+        status: certs.length <= 0 ? "MANUFACTURED" : await statusMapper(certs[certs.length - 1].status),
       });
     }
   }
@@ -86,7 +75,7 @@ export default function VehiclesAwaitingInspection() {
   }
 
   useEffect(async () => {
-    if (account && account.mode !== "MANUFACTURER") {
+    if (account && account.mode !== "INSPECTOR") {
       router.push("/");
     } else {
       if (!loading) {

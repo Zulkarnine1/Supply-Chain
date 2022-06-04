@@ -1,9 +1,22 @@
 /* This example requires Tailwind CSS v2.0+ */
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
+import SmallLoader from "../../components/common/SmallLoader";
+import CheckVer from "../../components/common/CheckVer";
 
-export default function CarList({ pageTitle, cars }) {
+async function verifyHandler({ setVerifying, setVerStatus }) {
+  setVerifying(true);
+  setTimeout("", 3000);
+  setTimeout(function () {
+    setVerifying(false);
+    setVerStatus(true);
+  }, 5000);
+}
+
+export default function CarList({ pageTitle, cars, mode, approveHandler }) {
   const [open, setOpen] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [verStatus, setVerStatus] = useState(false);
   const [selectedCar, setSelectedCar] = useState(null);
 
   const handleViewClick = async (car) => {
@@ -21,7 +34,7 @@ export default function CarList({ pageTitle, cars }) {
 
         <div className="mt-16">
           <div>
-            <form class="mt-12 sm:max-w-lg sm:flex">
+            {/* <form class="mt-12 sm:max-w-lg sm:flex">
               <div class="min-w-0 flex-1">
                 <input
                   id="cta-email"
@@ -38,7 +51,7 @@ export default function CarList({ pageTitle, cars }) {
                   Search
                 </button>
               </div>
-            </form>
+            </form> */}
           </div>
           <div className="bg-white mt-16">
             <ul role="list" className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -63,7 +76,7 @@ export default function CarList({ pageTitle, cars }) {
                     </div>
                     <p className="mt-1 text-indigo-600 text-xl truncate flex-shrink-0">
                       <EthIcon></EthIcon>
-                      <p className="inline-block">{car.price}</p>
+                      <p className="inline-block">{Number(car.pricePreDecimal + "." + car.pricePostDecimal)}</p>
                     </p>
                   </div>
                   <div>
@@ -143,12 +156,14 @@ export default function CarList({ pageTitle, cars }) {
 
                           <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                             <dt className="text-sm font-medium text-gray-500">Vehicle Price in ETH</dt>
-                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{selectedCar.price}</dd>
+                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                              {Number(selectedCar.pricePreDecimal + "." + selectedCar.pricePostDecimal)}
+                            </dd>
                           </div>
 
                           <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                             <dt className="text-sm font-medium text-gray-500">VIN/Chasis no.</dt>
-                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{selectedCar.vin}</dd>
+                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{selectedCar.id}</dd>
                           </div>
                           <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                             <dt className="text-sm font-medium text-gray-500">Color</dt>
@@ -206,13 +221,22 @@ export default function CarList({ pageTitle, cars }) {
                               </div>
                               <div className="certificate-footer text-muted mt-20">
                                 <div className="row">
-                                  <div className="col-md-6 text-right">
+                                  <div className="col-md-6 text-left">
                                     <p>Issuer: {certificate.issuer}</p>
                                     <p>Prover: {certificate.prover}</p>
-                                    <p>Date: {certificate.date}</p>
-                                    <button className="inline-flex items-center px-6 py-1 my-4 border border-transparent text-sm rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                      Verify
-                                    </button>
+                                    <p>Date: {new Date(Number(certificate.timestamp)).toLocaleDateString()}</p>
+                                    {verStatus ? (
+                                      <CheckVer />
+                                    ) : !verifying ? (
+                                      <button
+                                        className="inline-flex items-center px-6 py-1 my-4 border border-transparent text-sm rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                        onClick={() => verifyHandler({ setVerifying, setVerStatus })}
+                                      >
+                                        Verify
+                                      </button>
+                                    ) : (
+                                      <SmallLoader />
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -221,6 +245,24 @@ export default function CarList({ pageTitle, cars }) {
                         </div>
                       ))}
                     </div>
+                  </div>
+                  <div className="mt-5 sm:mt-6 text-center">
+                    {mode === "INSPECTOR" && selectedCar.certificates.length <= 0 ? (
+                      <>
+                        <button
+                          type="button"
+                          className="inline-flex max-w-lg justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm mx-auto"
+                          onClick={() => {
+                            approveHandler(selectedCar.id, selectedCar.manufacturer);
+                            setOpen(false);
+                          }}
+                        >
+                          Approve
+                        </button>
+                      </>
+                    ) : (
+                      <></>
+                    )}
                   </div>
                   <div className="mt-5 sm:mt-6 text-center">
                     <button

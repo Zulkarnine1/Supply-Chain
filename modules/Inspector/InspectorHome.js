@@ -35,29 +35,29 @@ const features = [
       </svg>
     ),
   },
-  {
-    name: "Vehicles Failed Inspection",
-    link: "inspector/vehicles-failed-inspection",
-    description: "Vehicles that have failed inspection.",
-    icon: () => (
-      <svg
-        width="25"
-        height="25"
-        xmlns="http://www.w3.org/2000/svg"
-        x="0"
-        y="0"
-        enableBackground="new 0 0 490 490"
-        version="1.1"
-        viewBox="0 0 490 490"
-        xmlSpace="preserve"
-      >
-        <path
-          fill="white"
-          d="M11.387 490L245 255.832 478.613 490 489.439 479.174 255.809 244.996 489.439 10.811 478.613 0 245 234.161 11.387 0 0.561 10.811 234.191 244.996 0.561 479.174z"
-        ></path>
-      </svg>
-    ),
-  },
+  // {
+  //   name: "Vehicles Failed Inspection",
+  //   link: "inspector/vehicles-failed-inspection",
+  //   description: "Vehicles that have failed inspection.",
+  //   icon: () => (
+  //     <svg
+  //       width="25"
+  //       height="25"
+  //       xmlns="http://www.w3.org/2000/svg"
+  //       x="0"
+  //       y="0"
+  //       enableBackground="new 0 0 490 490"
+  //       version="1.1"
+  //       viewBox="0 0 490 490"
+  //       xmlSpace="preserve"
+  //     >
+  //       <path
+  //         fill="white"
+  //         d="M11.387 490L245 255.832 478.613 490 489.439 479.174 255.809 244.996 489.439 10.811 478.613 0 245 234.161 11.387 0 0.561 10.811 234.191 244.996 0.561 479.174z"
+  //       ></path>
+  //     </svg>
+  //   ),
+  // },
 ];
 
 export default function InspectorHome() {

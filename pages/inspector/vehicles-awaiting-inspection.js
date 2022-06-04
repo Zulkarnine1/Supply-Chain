@@ -6,25 +6,6 @@ import useWeb3UserHook from "../../modules/Common/hooks/userAndWeb3Hook";
 import Web3Context from "../../modules/Common/hooks/web3Context";
 import useAccountChangeListener from "../../modules/Common/hooks/accountChangeListener";
 
-async function statusMapper(status) {
-  switch (status) {
-    case "0":
-      return "MANUFACTURED";
-    case "1":
-      return "INSPECTED";
-    case "2":
-      return "DELIVERING_TO_SUPPLIER";
-    case "3":
-      return "STORED";
-    case "4":
-      return "DELIVERING_TO_BUYER";
-    case "5":
-      return "DELIVERED";
-    default:
-      return null;
-  }
-}
-
 async function findVehiclesAwaitingInspection(web3, chainInstance, manufacturer) {
   const vehicleCount = await chainInstance.methods.getVehiclesCount().call();
   let fetchedCars = [];
@@ -38,22 +19,11 @@ async function findVehiclesAwaitingInspection(web3, chainInstance, manufacturer)
       certs.push(certificate);
     }
 
-    let stat;
-    if (certs.length > 0) {
-      stat = await statusMapper(certs[certs.length - 1].status);
-    } else {
-      stat = "MANUFACTURED";
-    }
-
-    if (
-      web3?.utils?.toChecksumAddress(vehicle.manufacturer) === manufacturer &&
-      certs.length > 0 &&
-      stat === "INSPECTED"
-    ) {
+    if (!certs.length > 0) {
       fetchedCars.push({
         ...vehicle,
         certificates: certs,
-        status: certs.length <= 0 ? "MANUFACTURED" : stat,
+        status: certs.length <= 0 ? "MANUFACTURED" : certs[certs.length - 1].status,
       });
     }
   }
@@ -86,13 +56,13 @@ export default function VehiclesAwaitingInspection() {
   }
 
   useEffect(async () => {
-    if (account && account.mode !== "MANUFACTURER") {
+    if (account && account.mode !== "INSPECTOR") {
       router.push("/");
     } else {
       if (!loading) {
         // need a function to get all cars, need to update the contract as well
-        let manufacturer = await web3?.utils?.toChecksumAddress(address);
-        let fetchedCars = await findVehiclesAwaitingInspection(web3, chainInstance, manufacturer);
+
+        let fetchedCars = await findVehiclesAwaitingInspection(web3, chainInstance);
 
         setCars([...fetchedCars]);
       }
@@ -108,7 +78,7 @@ export default function VehiclesAwaitingInspection() {
 
         <CarList
           cars={cars}
-          pageTitle={"Vehicles Passed Inspection"}
+          pageTitle={"Vehicles Awaiting Inspection"}
           mode={"INSPECTOR"}
           approveHandler={approveHandler}
         />

@@ -39,14 +39,16 @@ async function findVehicles(web3, chainInstance, manufacturer) {
     }
 
     let stat;
+    let lastIssuer;
     if (certs.length > 0) {
       stat = await statusMapper(certs[certs.length - 1].status);
+      lastIssuer = certs[certs.length - 1].issuer.id;
     } else {
       stat = "MANUFACTURED";
     }
 
     if (
-      web3?.utils?.toChecksumAddress(vehicle.manufacturer) === manufacturer &&
+      web3?.utils?.toChecksumAddress(lastIssuer) === manufacturer &&
       certs.length > 0 &&
       (stat === "STORED" || stat === "DELIVERED")
     ) {
@@ -68,7 +70,7 @@ export default function VehiclesAwaitingInspection() {
   useAccountChangeListener();
 
   useEffect(async () => {
-    if (account && account.mode !== "MANUFACTURER") {
+    if (account && account.mode !== "SUPPLIER") {
       router.push("/");
     } else {
       if (!loading) {
@@ -88,7 +90,7 @@ export default function VehiclesAwaitingInspection() {
       <main className="mx-auto w-full px-4 bg-gray-50">
         {/* Management options section */}
 
-        <CarList cars={cars} pageTitle={"Sold Vehicles"} mode={"MANUFACTURER"} />
+        <CarList cars={cars} pageTitle={"Sold Vehicles"} mode={"SUPPLIER"} />
       </main>
     </div>
   );

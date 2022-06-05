@@ -25,7 +25,7 @@ async function statusMapper(status) {
   }
 }
 
-async function findVehicles(web3, chainInstance, manufacturer) {
+async function findVehicles(web3, chainInstance, currentOwner) {
   const vehicleCount = await chainInstance.methods.getVehiclesCount().call();
   let fetchedCars = [];
   for (let i = 0; i < Number(vehicleCount); i++) {
@@ -44,16 +44,13 @@ async function findVehicles(web3, chainInstance, manufacturer) {
     } else {
       stat = "MANUFACTURED";
     }
-
-    if (
-      web3?.utils?.toChecksumAddress(vehicle.manufacturer) === manufacturer &&
-      certs.length > 0 &&
-      (stat === "STORED" || stat === "DELIVERED")
-    ) {
+    console.log(stat);
+    console.log(web3?.utils?.toChecksumAddress(vehicle.current_owner) === currentOwner);
+    if (web3?.utils?.toChecksumAddress(vehicle.current_owner) === currentOwner && stat === "STORED") {
       fetchedCars.push({
         ...vehicle,
         certificates: certs,
-        status: certs.length <= 0 ? "MANUFACTURED" : stat,
+        status: stat,
       });
     }
   }
@@ -67,14 +64,32 @@ export default function VehiclesAwaitingInspection() {
   const { web3, chainInstance, address } = useContext(Web3Context);
   useAccountChangeListener();
 
+  async function approveHandler(vehicleId, manufacturer) {
+    let inspector = address;
+    const message = `Inspector (${inspector}) has inspected and certified the vehicle (${vehicleId})`;
+    const signature = await web3.eth.sign(web3.utils.keccak256(message), inspector);
+    await chainInstance.methods
+      .issueCertificate(
+        inspector,
+        manufacturer,
+        "INSPECTED",
+        vehicleId,
+        signature,
+        "This vehicle was inspected",
+        new Date().getTime()
+      )
+      .send({ from: inspector });
+    router.push("/");
+  }
+
   useEffect(async () => {
-    if (account && account.mode !== "MANUFACTURER") {
+    if (account && account.mode !== "SUPPLIER") {
       router.push("/");
     } else {
       if (!loading) {
         // need a function to get all cars, need to update the contract as well
-        let manufacturer = await web3?.utils?.toChecksumAddress(address);
-        let fetchedCars = await findVehicles(web3, chainInstance, manufacturer);
+        let currentOwner = await web3?.utils?.toChecksumAddress(address);
+        let fetchedCars = await findVehicles(web3, chainInstance, currentOwner);
 
         setCars([...fetchedCars]);
       }
@@ -88,7 +103,7 @@ export default function VehiclesAwaitingInspection() {
       <main className="mx-auto w-full px-4 bg-gray-50">
         {/* Management options section */}
 
-        <CarList cars={cars} pageTitle={"Sold Vehicles"} mode={"MANUFACTURER"} />
+        <CarList cars={cars} pageTitle={"Vehicles Awaiting Sell"} mode={"SUPPLIER"} approveHandler={approveHandler} />
       </main>
     </div>
   );

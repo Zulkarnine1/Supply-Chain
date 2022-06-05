@@ -151,9 +151,7 @@ address public owner;
         }
     }
 
-    function compareStrings (string memory a, string memory b) public view returns (bool) {
-        return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
-    }
+   
     function addVehicle(string memory brand, address manufacturer, string memory _model, uint pricePreDecimal,uint  pricePostDecimal, string memory vin, string memory color, uint manufactured_year , string memory manufactured_city, string memory manufactured_country, string memory additional_comment ) public returns(string memory vehicleId) {
 
         uint[] memory _certificateIds = new uint[](MAX_CERTIFICATIONS);
@@ -168,26 +166,30 @@ address public owner;
     
 
 
-    function Time_call() public returns (uint256){
-            return block.timestamp;
-        }
-
-    function purhcaseVehicle(string memory id,string memory vin, bytes memory sign, string memory message) public {
+    function purhcaseVehicle(string memory id, string memory vin, bytes memory sign, string memory message, uint timestamp) public payable returns(bool) {
 
         // Check if vehicle exists
         Vehicle memory autoVehicle = vehicles[id];
-        bool vehicleExists = compareStrings(autoVehicle.id,vin);
-        require(vehicleExists == true, "Vehicle does not exist.");
-        // transfer funds to currentOwner of the vehicle
-        uint amount = autoVehicle.pricePreDecimal * 10^18 + autoVehicle.pricePostDecimal*10^16;
-        address payable old_owner = payable(autoVehicle.current_owner);
-        old_owner.transfer(amount);
         // Set new owner
         autoVehicle.current_owner = msg.sender;
         vehicles[id] = autoVehicle;
     
         // new owner certificate
-         issueCertificate(old_owner, autoVehicle.current_owner, "DELIVERING_TO_SUPPLIER" , autoVehicle.id, sign, message, Time_call());
+         issueCertificate(autoVehicle.manufacturer, autoVehicle.current_owner, "STORED" , autoVehicle.id, sign, message, timestamp);
+        return true;
+    }
+
+    function purhcaseVehicleCustomer(string memory id,string memory vin, bytes memory sign, string memory message, address seller, uint timestamp) public {
+
+        // Check if vehicle exists
+        Vehicle memory autoVehicle = vehicles[id];
+        
+        // Set new owner
+        autoVehicle.current_owner = msg.sender;
+        vehicles[id] = autoVehicle;
+    
+        // new owner certificate
+         issueCertificate(seller, msg.sender, "DELIVERED" , autoVehicle.id, sign, message, timestamp);
         
     }
 

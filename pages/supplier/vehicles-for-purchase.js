@@ -45,15 +45,11 @@ async function findVehicles(web3, chainInstance, manufacturer) {
       stat = "MANUFACTURED";
     }
 
-    if (
-      web3?.utils?.toChecksumAddress(vehicle.manufacturer) === manufacturer &&
-      certs.length > 0 &&
-      (stat === "STORED" || stat === "DELIVERED")
-    ) {
+    if (certs.length > 0 && stat === "INSPECTED") {
       fetchedCars.push({
         ...vehicle,
         certificates: certs,
-        status: certs.length <= 0 ? "MANUFACTURED" : stat,
+        status: stat,
       });
     }
   }
@@ -67,15 +63,35 @@ export default function VehiclesAwaitingInspection() {
   const { web3, chainInstance, address } = useContext(Web3Context);
   useAccountChangeListener();
 
+  async function purchaseVehicle(vehicleId, vin, currentOwner, price) {
+    try {
+      let myAddress = address;
+      let toAddress = currentOwner;
+      currentOwner = web3?.utils?.toChecksumAddress(currentOwner);
+      const amountToSend = await web3.utils.toWei(String(price), "ether");
+      await web3.eth.sendTransaction({
+        from: myAddress,
+        to: toAddress,
+        value: amountToSend,
+      });
+      const message = `This car's ownership has been transferred from ${currentOwner} to ${address} for ETH ${price}`;
+      const signature = await web3.eth.sign(web3.utils.keccak256(message), myAddress);
+      await chainInstance.methods
+        .purhcaseVehicle(vehicleId, vehicleId, signature, message, new Date().getTime())
+        .send({ from: myAddress });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   useEffect(async () => {
-    if (account && account.mode !== "MANUFACTURER") {
+    if (account && account.mode !== "SUPPLIER") {
       router.push("/");
     } else {
       if (!loading) {
         // need a function to get all cars, need to update the contract as well
         let manufacturer = await web3?.utils?.toChecksumAddress(address);
         let fetchedCars = await findVehicles(web3, chainInstance, manufacturer);
-
         setCars([...fetchedCars]);
       }
     }
@@ -88,7 +104,13 @@ export default function VehiclesAwaitingInspection() {
       <main className="mx-auto w-full px-4 bg-gray-50">
         {/* Management options section */}
 
-        <CarList cars={cars} pageTitle={"Sold Vehicles"} mode={"MANUFACTURER"} />
+        <CarList
+          cars={cars}
+          pageTitle={"Vehicles For Purchase"}
+          mode={"SUPPLIER"}
+          action={"PURCHASE"}
+          purchaseHandler={purchaseVehicle}
+        />
       </main>
     </div>
   );

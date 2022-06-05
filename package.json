@@ -6,7 +6,7 @@
     "test": "test"
   },
   "scripts": {
-    "ganache-dev": "ganache-cli -m \"candy maple cake sugar pudding cream honey rich smooth crumble sweet treat\"",
+    "ganache-dev": "ganache-cli -m \"candy maple cake sugar pudding cream honey rich smooth crumble sweet treat\" --gasLimit=0x1fffffffffffff --allowUnlimitedContractSize -e 1000000000",
     "test": "truffle test",
     "dev": "next dev",
     "build": "next build",

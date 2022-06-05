@@ -13,7 +13,7 @@ async function verifyHandler({ setVerifying, setVerStatus }) {
   }, 5000);
 }
 
-export default function CarList({ pageTitle, cars, mode, approveHandler }) {
+export default function CarList({ pageTitle, cars, mode, approveHandler, purchaseHandler, action }) {
   const [open, setOpen] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [verStatus, setVerStatus] = useState(false);
@@ -258,6 +258,29 @@ export default function CarList({ pageTitle, cars, mode, approveHandler }) {
                           }}
                         >
                           Approve
+                        </button>
+                      </>
+                    ) : (
+                      <></>
+                    )}
+                  </div>
+                  <div className="mt-5 sm:mt-6 text-center">
+                    {(mode === "SUPPLIER" || mode === "CONSUMER") && action === "PURCHASE" ? (
+                      <>
+                        <button
+                          type="button"
+                          className="inline-flex max-w-lg justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm mx-auto"
+                          onClick={() => {
+                            purchaseHandler(
+                              selectedCar.id,
+                              selectedCar.id,
+                              selectedCar.current_owner,
+                              Number(selectedCar.pricePreDecimal + "." + selectedCar.pricePostDecimal)
+                            );
+                            setOpen(false);
+                          }}
+                        >
+                          Purchase
                         </button>
                       </>
                     ) : (
